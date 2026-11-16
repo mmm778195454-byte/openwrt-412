@@ -1,0 +1,31 @@
+name: Build mdk4 for OpenWrt 23.05.0
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:  # يسمح بالتشغيل اليدوي من واجهة GitHub
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: [mips_24kc]   # معمارية جهازك
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build package with OpenWrt SDK
+        uses: openwrt/gh-action-sdk@v5   # أحدث إصدار مستقر من الأكشن
+        env:
+          ARCH: ${{ matrix.arch }}
+          # يمكنك تحديد إصدار SDK بدقة عبر المتغير التالي (اختياري)
+          # CONTAINER: "ghcr.io/openwrt/sdk:mips_24kc-23.05.0"
+          PACKAGES: "mdk4"   # اسم الحزمة التي نريد بناءها فقط
+
+      - name: Upload artifact (IPK file)
+        uses: actions/upload-artifact@v4
+        with:
+          name: mdk4-${{ matrix.arch }}
+          path: bin/packages/${{ matrix.arch }}/base/*.ipk
+          if-no-files-found: error
